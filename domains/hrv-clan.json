@@ -1,0 +1,12 @@
+{
+  "owner": {
+    "username": "hrvweb",
+    "email": "hrvreroclan@gmail.com"
+  },
+  "domain": "is-a-app.indevs.in",
+  "subdomain": "hrv-clan",
+  "records": {
+    "A": ["75.2.60.5"]
+  },
+"proxied": false
+}
