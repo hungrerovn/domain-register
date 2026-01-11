@@ -1,0 +1,12 @@
+{
+  "name": "domains-registry",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "ava tests/*.test.js --verbose"
+  },
+  "dependencies": {
+    "ava": "^5.0.0",
+    "fs-extra": "^11.0.0",
+    "path": "^0.12.7"
+  }
+}
