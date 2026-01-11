@@ -1,0 +1,75 @@
+Name: "Hrv Clan Bot"
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'domains/**'
+      - 'tests/**'
+      - 'package.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Security Check
+        id: folder_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            const unauthorizedFiles = files.filter(f => !f.filename.startsWith('domains/'));
+            if (unauthorizedFiles.length > 0) {
+              core.setFailed("Unauthorized file changes detected outside the domains folder.");
+            }
+
+      - name: Run Domain Logic Tests
+        if: success()
+        run: npm test
+
+      - name: Bot Feedback
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            const hasUnauthorizedFiles = files.some(f => !f.filename.startsWith('domains/'));
+
+            let message = `Validation Failed\n\nHi @${context.payload.pull_request.user.login},\n\n`;
+            
+            if (hasUnauthorizedFiles) {
+              message += "Error: You are only permitted to modify files within the domains/ directory. Please remove any changes made to other system folders.";
+            } else {
+              message += "Your request contains technical errors. Please click the Details link in the status check section below to view the error logs and fix your JSON file.";
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
