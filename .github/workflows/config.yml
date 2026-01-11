@@ -8,6 +8,10 @@ on:
       - 'tests/**'
       - 'package.json'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -73,3 +77,4 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
+
